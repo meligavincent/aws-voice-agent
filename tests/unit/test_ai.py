@@ -28,7 +28,9 @@ def faq():
     }
     instance.runtime.converse.return_value = {
         "stopReason": "end_turn",
-        "output": {"message": {"content": [{"text": "Open 9 to 5."}]}},
+        "output": {
+            "message": {"content": [{"text": '{"answer": "Open 9 to 5.", "handoff": false}'}]}
+        },
     }
     return instance
 
@@ -66,3 +68,27 @@ def test_circuit_opens_after_three_failures_and_recovers(faq):
     faq.retrieval.retrieve.side_effect = None
     assert faq.answer("hours?")
     assert faq.failures == 0
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '{"answer":"", "handoff":true}',
+        '{"answer":"An advisor is needed.", "handoff":"false"}',
+        "An advisor is needed.",
+        '{"answer":"Unsupported", "handoff":false, "execute":"callback"}',
+    ],
+)
+def test_model_abstention_or_invalid_contract_cannot_be_spoken_as_success(faq, payload):
+    faq.runtime.converse.return_value["output"]["message"]["content"] = [{"text": payload}]
+    with pytest.raises(Unavailable):
+        faq.answer("Will my personal claim be paid?")
+
+
+def test_normal_abstentions_do_not_open_dependency_breaker(faq):
+    faq.retrieval.retrieve.return_value = {"retrievalResults": []}
+    for _ in range(4):
+        with pytest.raises(Unavailable):
+            faq.answer("An unknown procedure?")
+    assert faq.failures == 0
+    assert faq.open_until == 0

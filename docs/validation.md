@@ -4,7 +4,7 @@ Initial local validation: 2026-11-13. This is an engineering test record, not cu
 
 | Check | Observed result |
 |---|---|
-| Python unit and conversation-contract suite | 34 passed; integration test excluded from this run |
+| Python unit and conversation-contract suite | 39 passed; integration test excluded from this run |
 | Actual LocalStack Lambda integration | Passed with deployed Lambda aliases, DynamoDB Stream, SQS and worker |
 | Repeated confirmed request | Same operation key and completed internal ticket observed |
 | Human-readable CLI demo | Completed the claim → confirmation → callback-ticket scenario |

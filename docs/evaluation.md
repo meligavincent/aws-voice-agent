@@ -10,7 +10,7 @@ These tests prove particular software properties. They **do not** measure speech
 
 ## Versioned release inputs
 
-- Prompt and `PROMPT_VERSION` in `src/voice_agent/ai.py` (`faq-v1`). Change the version when meaning changes.
+- Prompt and `PROMPT_VERSION` in `src/voice_agent/ai.py` (`faq-v2`). Change the version when meaning changes.
 - Model/inference profile in Terraform variables; record the actual resolved AWS model/profile in private release evidence.
 - Immutable published guardrail version in Lambda configuration.
 - Approved S3 public-document versions and the completed ingestion-job ID in each region.
