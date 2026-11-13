@@ -1,0 +1,5 @@
+bucket       = "REPLACE-WITH-BOOTSTRAP-OUTPUT"
+key          = "aws-voice-agent/demo/terraform.tfstate"
+region       = "eu-central-1"
+encrypt      = true
+use_lockfile = true

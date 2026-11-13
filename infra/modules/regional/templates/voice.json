@@ -1,0 +1,581 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Bilingual Lex V2 bot with scoped Amazon Connect association; no conversation logs",
+  "Parameters": {
+    "BotName": {
+      "Type": "String"
+    },
+    "RoleArn": {
+      "Type": "String"
+    },
+    "LambdaArn": {
+      "Type": "String"
+    },
+    "ConnectArn": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "Bot": {
+      "Type": "AWS::Lex::Bot",
+      "Properties": {
+        "Name": {
+          "Ref": "BotName"
+        },
+        "RoleArn": {
+          "Ref": "RoleArn"
+        },
+        "DataPrivacy": {
+          "ChildDirected": false
+        },
+        "IdleSessionTTLInSeconds": 300,
+        "AutoBuildBotLocales": true,
+        "BotLocales": [
+          {
+            "LocaleId": "fr_FR",
+            "NluConfidenceThreshold": 0.6,
+            "VoiceSettings": {
+              "VoiceId": "Celine"
+            },
+            "Intents": [
+              {
+                "Name": "ClaimStatus",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "où en est mon dossier"
+                  },
+                  {
+                    "Utterance": "suivre mon sinistre"
+                  },
+                  {
+                    "Utterance": "consulter mon dossier"
+                  }
+                ],
+                "Slots": [
+                  {
+                    "Name": "ClaimNumber",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "None"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Votre numéro de dossier à six chiffres ?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "Name": "AccessCode",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "DefaultObfuscation"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Votre code d’accès à six chiffres ?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "SlotPriorities": [
+                  {
+                    "Priority": 1,
+                    "SlotName": "ClaimNumber"
+                  },
+                  {
+                    "Priority": 2,
+                    "SlotName": "AccessCode"
+                  }
+                ]
+              },
+              {
+                "Name": "RequestCallback",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "je souhaite être rappelé"
+                  },
+                  {
+                    "Utterance": "demander un rappel"
+                  }
+                ],
+                "Slots": [
+                  {
+                    "Name": "ClaimNumber",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "None"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Votre numéro de dossier à six chiffres ?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "Name": "AccessCode",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "DefaultObfuscation"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Votre code d’accès à six chiffres ?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "SlotPriorities": [
+                  {
+                    "Priority": 1,
+                    "SlotName": "ClaimNumber"
+                  },
+                  {
+                    "Priority": 2,
+                    "SlotName": "AccessCode"
+                  }
+                ],
+                "IntentConfirmationSetting": {
+                  "PromptSpecification": {
+                    "MaxRetries": 2,
+                    "MessageGroupsList": [
+                      {
+                        "Message": {
+                          "PlainTextMessage": {
+                            "Value": "Confirmez-vous la demande de rappel ?"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "DeclinationResponse": {
+                    "MessageGroupsList": [
+                      {
+                        "Message": {
+                          "PlainTextMessage": {
+                            "Value": "Demande annulée."
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "Name": "Handoff",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "parler à un conseiller"
+                  },
+                  {
+                    "Utterance": "un humain s'il vous plaît"
+                  }
+                ]
+              },
+              {
+                "Name": "FallbackIntent",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "ParentIntentSignature": "AMAZON.FallbackIntent"
+              }
+            ]
+          },
+          {
+            "LocaleId": "en_GB",
+            "NluConfidenceThreshold": 0.6,
+            "VoiceSettings": {
+              "VoiceId": "Amy"
+            },
+            "Intents": [
+              {
+                "Name": "ClaimStatus",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "check my claim status"
+                  },
+                  {
+                    "Utterance": "track my claim"
+                  }
+                ],
+                "Slots": [
+                  {
+                    "Name": "ClaimNumber",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "None"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Your six-digit claim number?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "Name": "AccessCode",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "DefaultObfuscation"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Your six-digit access code?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "SlotPriorities": [
+                  {
+                    "Priority": 1,
+                    "SlotName": "ClaimNumber"
+                  },
+                  {
+                    "Priority": 2,
+                    "SlotName": "AccessCode"
+                  }
+                ]
+              },
+              {
+                "Name": "RequestCallback",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "request a callback"
+                  },
+                  {
+                    "Utterance": "please call me back"
+                  }
+                ],
+                "Slots": [
+                  {
+                    "Name": "ClaimNumber",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "None"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Your six-digit claim number?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "Name": "AccessCode",
+                    "SlotTypeName": "AMAZON.Number",
+                    "ObfuscationSetting": {
+                      "ObfuscationSettingType": "DefaultObfuscation"
+                    },
+                    "ValueElicitationSetting": {
+                      "SlotConstraint": "Required",
+                      "PromptSpecification": {
+                        "MaxRetries": 2,
+                        "MessageGroupsList": [
+                          {
+                            "Message": {
+                              "PlainTextMessage": {
+                                "Value": "Your six-digit access code?"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "SlotPriorities": [
+                  {
+                    "Priority": 1,
+                    "SlotName": "ClaimNumber"
+                  },
+                  {
+                    "Priority": 2,
+                    "SlotName": "AccessCode"
+                  }
+                ],
+                "IntentConfirmationSetting": {
+                  "PromptSpecification": {
+                    "MaxRetries": 2,
+                    "MessageGroupsList": [
+                      {
+                        "Message": {
+                          "PlainTextMessage": {
+                            "Value": "Do you confirm the callback request?"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "DeclinationResponse": {
+                    "MessageGroupsList": [
+                      {
+                        "Message": {
+                          "PlainTextMessage": {
+                            "Value": "Request cancelled."
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "Name": "Handoff",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "SampleUtterances": [
+                  {
+                    "Utterance": "speak to an advisor"
+                  },
+                  {
+                    "Utterance": "talk to a human"
+                  }
+                ]
+              },
+              {
+                "Name": "FallbackIntent",
+                "FulfillmentCodeHook": {
+                  "Enabled": true
+                },
+                "ParentIntentSignature": "AMAZON.FallbackIntent"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Versioneaadbfed017c": {
+      "Type": "AWS::Lex::BotVersion",
+      "Properties": {
+        "BotId": {
+          "Ref": "Bot"
+        },
+        "BotVersionLocaleSpecification": [
+          {
+            "LocaleId": "fr_FR",
+            "BotVersionLocaleDetails": {
+              "SourceBotVersion": "DRAFT"
+            }
+          },
+          {
+            "LocaleId": "en_GB",
+            "BotVersionLocaleDetails": {
+              "SourceBotVersion": "DRAFT"
+            }
+          }
+        ]
+      }
+    },
+    "Alias": {
+      "Type": "AWS::Lex::BotAlias",
+      "Properties": {
+        "BotAliasName": "live",
+        "BotId": {
+          "Ref": "Bot"
+        },
+        "BotVersion": {
+          "Fn::GetAtt": [
+            "Versioneaadbfed017c",
+            "BotVersion"
+          ]
+        },
+        "BotAliasLocaleSettings": [
+          {
+            "LocaleId": "fr_FR",
+            "BotAliasLocaleSetting": {
+              "Enabled": true,
+              "CodeHookSpecification": {
+                "LambdaCodeHook": {
+                  "CodeHookInterfaceVersion": "1.0",
+                  "LambdaArn": {
+                    "Ref": "LambdaArn"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "LocaleId": "en_GB",
+            "BotAliasLocaleSetting": {
+              "Enabled": true,
+              "CodeHookSpecification": {
+                "LambdaCodeHook": {
+                  "CodeHookInterfaceVersion": "1.0",
+                  "LambdaArn": {
+                    "Ref": "LambdaArn"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "ConnectPolicy": {
+      "Type": "AWS::Lex::ResourcePolicy",
+      "Properties": {
+        "ResourceArn": {
+          "Fn::GetAtt": [
+            "Alias",
+            "Arn"
+          ]
+        },
+        "Policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "connect.amazonaws.com"
+              },
+              "Action": [
+                "lex:RecognizeText",
+                "lex:StartConversation"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Alias",
+                  "Arn"
+                ]
+              },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnEquals": {
+                  "AWS:SourceArn": {
+                    "Ref": "ConnectArn"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Association": {
+      "Type": "AWS::Connect::IntegrationAssociation",
+      "DependsOn": "ConnectPolicy",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "ConnectArn"
+        },
+        "IntegrationType": "LEX_BOT",
+        "IntegrationArn": {
+          "Fn::GetAtt": [
+            "Alias",
+            "Arn"
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AliasArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Alias",
+          "Arn"
+        ]
+      }
+    },
+    "BotId": {
+      "Value": {
+        "Ref": "Bot"
+      }
+    },
+    "AliasId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Alias",
+          "BotAliasId"
+        ]
+      }
+    }
+  }
+}

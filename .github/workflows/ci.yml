@@ -1,0 +1,53 @@
+name: Verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: '0.9.3'
+          python-version: '3.12'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.16.1'
+          terraform_wrapper: false
+      - run: uv sync --frozen
+      - run: make check validate
+      - run: terraform -chdir=infra/aws test -no-color
+      - name: Check generated bot template is current
+        run: |
+          uv run python scripts/build_voice_templates.py
+          git diff --exit-code -- infra/modules/regional/templates/voice.json
+  localstack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: '0.9.3'
+          python-version: '3.12'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.16.1'
+          terraform_wrapper: false
+      - run: uv sync --frozen
+      - run: make local-up local-apply integration
+      - name: Collect LocalStack diagnostics on failure
+        if: failure()
+        run: docker --context default compose logs --tail 150
+      - name: Stop ephemeral demo services
+        if: always()
+        run: docker --context default compose down

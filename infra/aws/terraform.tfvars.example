@@ -1,0 +1,14 @@
+account_id               = "123456789012" # replace
+name                     = "voice-agent"
+environment              = "demo"
+deployment_principal_arn = "arn:aws:iam::123456789012:role/VoiceAgentDeployer" # replace
+primary_region           = "eu-central-1"
+standby_region           = "eu-west-2"
+enable_standby           = false # true provisions the second app; see disaster recovery runbook
+enable_voice             = true
+enable_rag               = true  # OpenSearch Serverless has a running baseline cost
+model_id                 = "amazon.nova-lite-v1:0" # confirm regional invocation support or configure profile ARN
+foundation_model_id      = "amazon.nova-lite-v1:0"
+standby_model_id          = "amazon.nova-lite-v1:0"
+# connect_instance_ids = { eu-central-1 = "existing-instance-id" }
+# alarm_actions = { eu-central-1 = ["arn:aws:sns:eu-central-1:123456789012:operations"] }

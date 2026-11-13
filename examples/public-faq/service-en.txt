@@ -1,0 +1,6 @@
+Demonstration service — fictitious data, no real insurance offering.
+To check a claim, have the claim number and access code ready.
+Upload missing documents through your customer portal. Do not dictate bank details.
+A callback request creates a ticket for an advisor. No callback deadline is guaranteed.
+Advisors work Monday to Friday, 9 am to 5 pm, Paris time.
+The assistant does not decide insurance coverage, liability or compensation.

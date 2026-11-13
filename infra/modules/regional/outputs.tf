@@ -1,0 +1,11 @@
+output "agent_function" { value = aws_lambda_alias.live["agent"].arn }
+output "queue_url" { value = aws_sqs_queue.work.url }
+output "dlq_url" { value = aws_sqs_queue.dead_letters.url }
+output "documents_bucket" { value = aws_s3_bucket.documents.id }
+output "documents_arn" { value = aws_s3_bucket.documents.arn }
+output "kms_arn" { value = aws_kms_key.data.arn }
+output "connect_instance_id" { value = var.enable_voice ? local.connect_id : null }
+output "contact_flow_id" { value = var.enable_voice ? aws_connect_contact_flow.inbound[0].contact_flow_id : null }
+output "lex_alias_arn" { value = var.enable_voice ? aws_cloudformation_stack.voice[0].outputs["AliasArn"] : null }
+output "knowledge_base_id" { value = var.enable_rag ? aws_bedrockagent_knowledge_base.faq[0].id : null }
+output "data_source_id" { value = var.enable_rag ? aws_bedrockagent_data_source.faq[0].data_source_id : null }

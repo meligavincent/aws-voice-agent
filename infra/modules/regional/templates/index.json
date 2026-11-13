@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Public FAQ vector index, managed by Terraform through CloudFormation",
+  "Parameters": {"CollectionEndpoint": {"Type": "String"}},
+  "Resources": {
+    "Index": {
+      "Type": "AWS::OpenSearchServerless::Index",
+      "Properties": {
+        "CollectionEndpoint": {"Ref": "CollectionEndpoint"},
+        "IndexName": "public-faq",
+        "Settings": {"Index": {"Knn": true}},
+        "Mappings": {"Properties": {
+          "embedding": {"Type": "knn_vector", "Dimension": 1024, "Method": {"Engine": "faiss", "Name": "hnsw", "SpaceType": "l2"}},
+          "text": {"Type": "text"},
+          "metadata": {"Type": "text", "Index": false}
+        }}
+      }
+    }
+  }
+}

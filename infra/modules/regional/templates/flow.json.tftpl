@@ -1,0 +1,246 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "logging",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "logging",
+      "Type": "UpdateFlowLoggingBehavior",
+      "Parameters": {
+        "FlowLoggingBehavior": "Disabled"
+      },
+      "Transitions": {
+        "NextAction": "voice"
+      }
+    },
+    {
+      "Identifier": "voice",
+      "Type": "UpdateContactTextToSpeechVoice",
+      "Parameters": {
+        "TextToSpeechVoice": "Celine",
+        "TextToSpeechEngine": "standard"
+      },
+      "Transitions": {
+        "NextAction": "language",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "language",
+      "Type": "UpdateContactData",
+      "Parameters": {
+        "LanguageCode": "fr-FR",
+        "TargetContact": "Current"
+      },
+      "Transitions": {
+        "NextAction": "bot",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "bot",
+      "Type": "ConnectParticipantWithLexBot",
+      "Parameters": {
+        "Text": "Bonjour. Je suis l’assistant automatisé. Vous pouvez suivre un dossier, demander un rappel ou parler à un conseiller.",
+        "LexV2Bot": {
+          "AliasArn": "${alias_arn}"
+        }
+      },
+      "Transitions": {
+        "NextAction": "handoff",
+        "Conditions": [
+          {
+            "Condition": {
+              "Operator": "Equals",
+              "Operands": [
+                "Handoff"
+              ]
+            },
+            "NextAction": "queue"
+          }
+        ],
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingCondition",
+            "NextAction": "handoff"
+          },
+          {
+            "ErrorType": "InputTimeLimitExceeded",
+            "NextAction": "queue"
+          },
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "queue"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "handoff",
+      "Type": "Compare",
+      "Parameters": {
+        "ComparisonValue": "$.Lex.SessionAttributes.handoff"
+      },
+      "Transitions": {
+        "NextAction": "bye",
+        "Conditions": [
+          {
+            "Condition": {
+              "Operator": "Equals",
+              "Operands": [
+                "true"
+              ]
+            },
+            "NextAction": "queue"
+          }
+        ],
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingCondition",
+            "NextAction": "bye"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "queue",
+      "Type": "UpdateContactTargetQueue",
+      "Parameters": {
+        "QueueId": "${queue_arn}"
+      },
+      "Transitions": {
+        "NextAction": "hours",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "hours",
+      "Type": "CheckHoursOfOperation",
+      "Parameters": {},
+      "Transitions": {
+        "NextAction": "unavailable",
+        "Conditions": [
+          {
+            "Condition": {
+              "Operator": "Equals",
+              "Operands": [
+                "True"
+              ]
+            },
+            "NextAction": "context"
+          },
+          {
+            "Condition": {
+              "Operator": "Equals",
+              "Operands": [
+                "False"
+              ]
+            },
+            "NextAction": "unavailable"
+          }
+        ],
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "context",
+      "Type": "UpdateContactAttributes",
+      "Parameters": {
+        "TargetContact": "Current",
+        "Attributes": {
+          "handoff_reason": "automated_service_escalation"
+        }
+      },
+      "Transitions": {
+        "NextAction": "transfer",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "transfer"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "transfer",
+      "Type": "TransferContactToQueue",
+      "Parameters": {},
+      "Transitions": {
+        "NextAction": "unavailable",
+        "Errors": [
+          {
+            "ErrorType": "QueueAtCapacity",
+            "NextAction": "unavailable"
+          },
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "unavailable"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "unavailable",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Le service ne peut pas vous mettre en relation maintenant. Merci de réessayer pendant les heures d’ouverture ou d’utiliser votre espace client."
+      },
+      "Transitions": {
+        "NextAction": "end",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "end"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "bye",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Merci pour votre appel. Au revoir."
+      },
+      "Transitions": {
+        "NextAction": "end",
+        "Errors": [
+          {
+            "ErrorType": "NoMatchingError",
+            "NextAction": "end"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "end",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    }
+  ]
+}

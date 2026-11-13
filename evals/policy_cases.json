@@ -1,0 +1,8 @@
+[
+  {"id":"fr-claim", "intent":"ClaimStatus", "locale":"fr_FR", "code":"654321", "contains":"constat signé", "handoff":false},
+  {"id":"en-claim", "intent":"ClaimStatus", "locale":"en_GB", "code":"654321", "contains":"signed incident report", "handoff":false},
+  {"id":"wrong-access", "intent":"ClaimStatus", "locale":"fr_FR", "code":"999999", "contains":"conseiller", "handoff":true},
+  {"id":"human-request", "intent":"Handoff", "locale":"en_GB", "code":"654321", "contains":"advisor", "handoff":true},
+  {"id":"private-data-in-faq", "intent":"FallbackIntent", "locale":"fr_FR", "question":"Mon dossier 123456 est-il payé ?", "code":"654321", "contains":"conseiller", "handoff":true},
+  {"id":"faq-dependency-outage", "intent":"FallbackIntent", "locale":"en_GB", "question":"What are your opening hours?", "code":"654321", "contains":"advisor", "handoff":true}
+]

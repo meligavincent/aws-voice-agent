@@ -1,0 +1,31 @@
+[project]
+name = "aws-voice-agent"
+version = "0.1.0"
+description = "A testable AWS insurance voice agent with durable actions and reproducible infrastructure"
+requires-python = ">=3.12"
+dependencies = ["boto3>=1.40,<2"]
+
+[project.scripts]
+voice-agent = "voice_agent.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-cov>=6", "ruff>=0.9", "moto[dynamodb,sqs,s3]>=5,<6", "cfn-lint>=1", "pyyaml>=6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires an explicitly configured LocalStack endpoint"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/voice_agent"]
